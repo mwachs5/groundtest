@@ -105,8 +105,8 @@ class CSRHandler(implicit val p: Parameters) extends Module {
 class GroundTestIO(implicit p: Parameters) extends ParameterizedBundle()(p) {
   val cache = new HellaCacheIO
   val mem = new ClientUncachedTileLinkIO
-  val dma = new DmaIO
   val ptw = new TLBPTWIO
+  val fpu = new FPSideIO
   val finished = Bool(OUTPUT)
 }
 
@@ -115,7 +115,8 @@ abstract class GroundTest(implicit val p: Parameters) extends Module {
 
   def disablePorts(mem: Boolean = true,
                    cache: Boolean = true,
-                   ptw: Boolean = true) {
+                   ptw: Boolean = true,
+                   fpu: Boolean = true) {
     if (mem) {
       io.mem.acquire.valid := Bool(false)
       io.mem.grant.ready := Bool(false)
@@ -125,6 +126,9 @@ abstract class GroundTest(implicit val p: Parameters) extends Module {
     }
     if (ptw) {
       io.ptw.req.valid := Bool(false)
+    }
+    if (fpu) {
+      io.fpu.req.valid := Bool(false)
     }
   }
 }
@@ -148,4 +152,14 @@ class GroundTestTile(id: Int, resetSignal: Bool)
   val ptw = Module(new DummyPTW(2))
   ptw.io.requestors(0) <> test.io.ptw
   ptw.io.requestors(1) <> dcache.io.ptw
+
+  val fpu = Module(new FPU)
+  val fpIF = Module(new FPSideInterface)
+  fpu.io.valid := Bool(false)
+  fpu.io.fcsr_rm := UInt(0)
+  fpu.io.dmem_resp_val := Bool(false)
+  fpu.io.killx := Bool(false)
+  fpu.io.killm := Bool(false)
+  fpu.io.side <> fpIF.io.out
+  fpIF.io.in <> test.io.fpu
 }
