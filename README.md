@@ -104,7 +104,7 @@ Suppose we have built the Rocket Chip emulator with the TraceGenConfig configura
 Main points:
 
 - the numeric command-line option sets the random seed;
-the first number on each line of the trace is the core id;
+- the first number on each line of the trace is the core id;
 - \#N denotes a request-id N;
 - \@T denotes a time T in clock cycles;
 - hex numbers denote addresses;
@@ -154,7 +154,7 @@ For intensive testing, we can put the above command into a for-loop that changes
 
   MODEL=$1
   for I in {1..10000}; do
-    OUT=`../scripts/tracegen.py ./emulator-Top-TraceGenConfig $I 2>&1 | head -n -1 | ../scripts/toaxe.py - | axe check $MODEL -`
+    OUT=`../scripts/tracegen.py ./emulator-Top-TraceGenConfig $I 2>&1 | ../scripts/toaxe.py - | axe check $MODEL -`
     if [ "$OUT" == "NO" ]; then
       echo Not $MODEL, seed=$I
       exit
@@ -173,7 +173,7 @@ We can now ask: is the memory-subsystem SC?
 We can view the counter-example by running the emulator with seed of 13:
 
 ```
-> ../scripts/tracegen.py ./emulator-Top-TraceGenConfig 13 |& cat - | ../scripts/toaxe.py - | axe check SC -
+> ../scripts/tracegen.py ./emulator-Top-TraceGenConfig 13 2>&1 | ../scripts/toaxe.py - | axe check SC -
 NO
 ```
 
